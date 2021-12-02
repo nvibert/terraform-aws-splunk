@@ -96,6 +96,18 @@ resource "aws_instance" "splunk" {
   availability_zone = data.aws_availability_zones.AZ.names[0]
 }
 
+output "splunk_public_ip" {
+  value = aws_instance.splunk.public_ip
+}
+
+output "splunk_default_username" {
+  value = "admin"
+}
+
+output "splunk_default_password" {
+  value = "SPLUNK-${aws_instance.splunk.id}"
+}
+
 resource "aws_security_group" "splunk_sg" {
   name        = "Splunk SG"
   description = "Splunk Security Group"
