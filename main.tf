@@ -38,7 +38,7 @@ resource "aws_subnet" "my_subnet" {
   }
 }
 
-resource "aws_network_interface" "foo" {
+resource "aws_network_interface" "network_interface" {
   subnet_id       = aws_subnet.my_subnet.id
   private_ips     = [var.private_ip]
   security_groups = [aws_security_group.splunk_sg.id]
@@ -57,7 +57,7 @@ resource "aws_route" "public_internet_gateway" {
   gateway_id             = aws_internet_gateway.gw.id
 }
 
-resource "aws_main_route_table_association" "a" {
+resource "aws_main_route_table_association" "association" {
   vpc_id         = aws_vpc.my_vpc.id
   route_table_id = aws_route_table.public.id
 }
@@ -90,7 +90,7 @@ resource "aws_instance" "splunk" {
     Name = "splunk-terraform"
   }
   network_interface {
-    network_interface_id = aws_network_interface.foo.id
+    network_interface_id = aws_network_interface.network_interface.id
     device_index         = 0
   }
   availability_zone = data.aws_availability_zones.AZ.names[0]
