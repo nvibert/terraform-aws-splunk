@@ -34,14 +34,14 @@ resource "aws_subnet" "my_subnet" {
   availability_zone       = data.aws_availability_zones.AZ.names[0]
   map_public_ip_on_launch = true
   tags = {
-    Name = "nico-vibert-subnet"
+    Name = "my-subnet"
   }
 }
 
 resource "aws_network_interface" "foo" {
   subnet_id       = aws_subnet.my_subnet.id
   private_ips     = [var.private_ip]
-  security_groups = [aws_security_group.allow_ssh_and_tls.id]
+  security_groups = [aws_security_group.splunk_sg.id]
   tags = {
     Name = "primary_network_interface"
   }
@@ -87,7 +87,7 @@ resource "aws_instance" "splunk" {
   ami           = data.aws_ami.splunk.id
   instance_type = var.instance_type
   tags = {
-    Name = "nico-terraform"
+    Name = "splunk-terraform"
   }
   network_interface {
     network_interface_id = aws_network_interface.foo.id
@@ -96,9 +96,9 @@ resource "aws_instance" "splunk" {
   availability_zone = data.aws_availability_zones.AZ.names[0]
 }
 
-resource "aws_security_group" "allow_ssh_and_tls" {
-  name        = "allow_tls"
-  description = "Allow TLS inbound traffic"
+resource "aws_security_group" "splunk_sg" {
+  name        = "Splunk SG"
+  description = "Splunk Security Group"
   vpc_id      = aws_vpc.my_vpc.id
 
   ingress {
@@ -136,7 +136,7 @@ resource "aws_security_group" "allow_ssh_and_tls" {
   }
 
   tags = {
-    Name = "allow_tls"
+    Name = "splunk_sg"
   }
 }
 
