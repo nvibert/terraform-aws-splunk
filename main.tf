@@ -1,3 +1,15 @@
+/**
+ * Usage:
+ *
+ * ```hcl
+ *
+ * module "splunk" {
+ *   source           = "git::https://github.com/nvibert/terraform-aws-splunk.git?ref=v1.0.0"
+ *   region           = "eu-west-2"
+ * }
+ * ```
+ */
+
 provider "aws" {
   region = var.region
 }
@@ -14,11 +26,14 @@ data "http" "my_public_ip" {
 }
 
 locals {
-  public_ip = jsondecode(data.http.my_public_ip.body).ip
+  public_ip  = jsondecode(data.http.my_public_ip.body).ip
+  vpc_cidr   = "172.16.0.0/16"
+  cidr_block = cidrsubnet(local.vpc_cidr, 8, 0)
+  private_ip = cidrhost(local.cidr_block, 100)
 }
 
 resource "aws_vpc" "my_vpc" {
-  cidr_block = var.vpc_cidr
+  cidr_block = local.vpc_cidr
   tags = {
     Name = "tf-example-2"
   }
@@ -30,7 +45,7 @@ resource "aws_internet_gateway" "gw" {
 
 resource "aws_subnet" "my_subnet" {
   vpc_id                  = aws_vpc.my_vpc.id
-  cidr_block              = var.subnet
+  cidr_block              = local.cidr_block
   availability_zone       = data.aws_availability_zones.AZ.names[0]
   map_public_ip_on_launch = true
   tags = {
@@ -40,7 +55,7 @@ resource "aws_subnet" "my_subnet" {
 
 resource "aws_network_interface" "network_interface" {
   subnet_id       = aws_subnet.my_subnet.id
-  private_ips     = [var.private_ip]
+  private_ips     = [local.private_ip]
   security_groups = [aws_security_group.splunk_sg.id]
   tags = {
     Name = "primary_network_interface"
